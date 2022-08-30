@@ -1,0 +1,24 @@
+{
+  "name": "roam-ai",
+  "version": "1.0.0",
+  "description": "AI extension for Roam",
+  "main": "./build/main.js",
+  "scripts": {
+    "prebuild:roam": "npm install",
+    "build:roam": "roamjs-scripts build --depot",
+    "dev": "roamjs-scripts dev",
+    "dev:roam": "roamjs-scripts dev --depot",
+    "start": "roamjs-scripts dev"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@headlessui/react": "^1.6.6",
+    "autoprefixer": "^10.4.8",
+    "postcss": "^8.4.16",
+    "roamjs-scripts": "^0.21.3",
+    "tailwindcss": "^3.1.8"
+  },
+  "dependencies": {
+    "roamjs-components": "^0.70.7"
+  }
+}

@@ -14,12 +14,12 @@ import { render as renderMenu } from "./RoamAIMenu";
 const extensionId = "roam-ai";
 const CONFIG = toConfigPageName(extensionId);
 
-let lastEditedBlockUid;
-let valueToCursor;
+let lastEditedBlockUid: string;
+let valueToCursor: string;
 
 let OPEN_AI_API_KEY = '';
 
-const sendRequest = (option) => {
+const sendRequest = (option: any) => {
   let maxTokens = 60;
   switch (option.id) {
     case 'completion_120':
@@ -64,7 +64,7 @@ const sendRequest = (option) => {
   .then(res => res.json())
   .then(data => {
     const lines = data.choices[0].text.trim().split("\n");
-    lines.reverse().map(line => {
+    lines.reverse().map((line: any) => {
       if (line.trim().length === 0) return; // skip blank lines
 
       createBlock({

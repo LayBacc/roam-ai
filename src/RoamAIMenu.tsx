@@ -10,15 +10,24 @@ import './index.css';
 
 import { getCoords } from "./dom";
 import { Menu } from '@headlessui/react'
+import type { OnloadArgs } from "roamjs-components/types/native";
+
+type Props = {
+  textarea: HTMLTextAreaElement;
+  triggerStart: number;
+  triggerRegex: RegExp;
+  extensionAPI: OnloadArgs["extensionAPI"];
+  sendRequest: any;
+};
 
 const OPTIONS = [
   {
-    id: 'completion_default'
-    name: '🧠 Completion (60 words)',
+    id: 'completion_default',
+    name: '🧠 Completion (60 words)'
   },
   {
-    id: 'completion_120'
-    name: '🧠 Completion (120 words)',
+    id: 'completion_120',
+    name: '🧠 Completion (120 words)'
   }
 ]  
 
@@ -29,12 +38,12 @@ const RoamAIMenu = ({
   triggerRegex,
   extensionAPI,
   sendRequest
-}: { onClose: () => void } & Props) => {
+}: any) => {
   const { ["block-uid"]: blockUid, ["window-id"]: windowId } = useMemo(
     () => window.roamAlphaAPI.ui.getFocusedBlock(),
     []
   );
-  const menuRef = useRef<HTMLUListElement>(null);
+  const menuRef = useRef(null);
   const [filter, setFilter] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const onSelect = useCallback(
@@ -113,11 +122,11 @@ const RoamAIMenu = ({
   );
 };
 
-export const render = (props: Props & { onClose: () => void }) => {
+export const render = (props: any) => {
   const parent = document.createElement("span");
   const coords = getCoords(props.textarea);
   parent.style.position = "absolute";
-  parent.style.zIndex = 10;
+  parent.style.zIndex = '10';
   parent.style.boxShadow = '0 0 0 1px rgb(16 22 26 / 10%), 0 2px 4px rgb(16 22 26 / 20%), 0 8px 24px rgb(16 22 26 / 20%)';
   parent.style.border = '1px solid rgb(213,218,222)';
   parent.style.width = '400px';

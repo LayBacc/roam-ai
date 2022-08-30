@@ -20,11 +20,7 @@ let valueToCursor;
 let OPEN_AI_API_KEY = '';
 
 const sendRequest = (option) => {
-  console.log("sendRequest option", option)
-
-  console.log("window.roamAlphaAPI.ui", window.roamAlphaAPI.ui)
-
-  let maxTokens = 48;
+  let maxTokens = 60;
   switch (option.id) {
     case 'completion_120':
       maxTokens = 120;
@@ -33,8 +29,6 @@ const sendRequest = (option) => {
 
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
-  console.log("parent:", getTextByBlockUid(parentBlockUid));
-  console.log("siblings: ", siblings);
 
   let prompt = '';
   prompt += getTextByBlockUid(parentBlockUid);
@@ -50,8 +44,6 @@ const sendRequest = (option) => {
   if (siblings.length <= 1) {
     prompt += valueToCursor.replace(new RegExp('qq$'), '');
   }
-
-  console.log("prompt", prompt);
 
   const data = {
     model: 'text-davinci-002',
@@ -71,12 +63,7 @@ const sendRequest = (option) => {
   })
   .then(res => res.json())
   .then(data => {
-    console.log("Open AI data", data.choices[0].text)
-
     const lines = data.choices[0].text.trim().split("\n");
-
-    console.log("lines", lines)
-
     lines.reverse().map(line => {
       if (line.trim().length === 0) return; // skip blank lines
 
@@ -85,9 +72,6 @@ const sendRequest = (option) => {
         parentUid: lastEditedBlockUid
       })
     })
-    // setGptResponse(data.choices[0].text)
-    // setShowResponse(true)
-    // setIsProcessing(false)
   })
   .catch((error) => {
     console.error('Error:', error);
@@ -99,45 +83,7 @@ export default runExtension({
   run: ({ extensionAPI }) => {
     createConfigObserver({ title: CONFIG, config: { tabs: [] } });
 
-    // const style = addStyle(`.bp3-button:focus {
-    //       outline-width: 2px;
-    //   }
-    //   .roamjs-query-condition-source, 
-    //   .roamjs-query-condition-relation,
-    //   .roamjs-query-return-node {
-    //     min-width: 144px;
-    //     max-width: 144px;
-    //   }
-    //   .roamjs-query-condition-relation,
-    //   .roamjs-query-return-node {
-    //     padding-right: 8px;
-    //   }
-    //   .roamjs-query-condition-target { 
-    //     flex-grow: 1;
-    //     min-width: 300px;
-    //   }
-    //   .roamjs-query-condition-relation .bp3-popover-target,
-    //   .roamjs-query-condition-target .roamjs-autocomplete-input-target { 
-    //     width: 100%
-    //   }
-    //   .roamjs-query-hightlighted-result {
-    //     background: #FFFF00;
-    //   }
-    //   .roamjs-query-embed .rm-block-separator {
-    //     display: none;
-    //   }
-    //   /* width */
-    //   .roamjs-query-results-view ul::-webkit-scrollbar {
-    //     width: 6px;
-    //   }
-    //   /* Handle */
-    //   .roamjs-query-results-view ul::-webkit-scrollbar-thumb {
-    //     background: #888;
-    // }`);
-
     const updateAPIKey = (value: string) => {
-      console.log("in updateAPIKey", value)
-
       OPEN_AI_API_KEY = value.trim();
     }
 
@@ -190,14 +136,7 @@ export default runExtension({
 
         lastEditedBlockUid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
     
-        console.log("lastEditedBlockUid", lastEditedBlockUid)
-        console.log("valueToCursor", valueToCursor)
-
         const match = triggerRegex.exec(valueToCursor);
-
-        console.log("match", match)
-        console.log("menuLoaded", menuLoaded)
-
         if (match) {
           menuLoaded = true;
 
@@ -215,19 +154,6 @@ export default runExtension({
       }
     };
     document.addEventListener("input", documentInputListener);
-
-    // return {
-    //   // elements: [style],
-    //   // observers: [logoObserver, buttonLogoObserver, ...highlightingObservers],
-    //   domListeners: [
-    //     { type: "input", listener: documentInputListener, el: document },
-    //     { type: "keydown", el: appRoot, listener: appRootKeydownListener },
-    //   ],
-    //   // commands: [
-    //   //   OPEN_SMARTBLOCK_STORE_COMMAND_LABEL,
-    //   //   RUN_MULTIPLE_SMARTBLOCKS_COMMAND_LABEL,
-    //   // ],
-    // };
   },
   unload: () => {},
 });

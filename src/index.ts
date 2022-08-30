@@ -3,6 +3,7 @@ import runExtension from "roamjs-components/util/runExtension";
 import { createConfigObserver } from "roamjs-components/components/ConfigPage";
 import addStyle from "roamjs-components/dom/addStyle";
 import createBlock from "roamjs-components/writes/createBlock";
+import updateBlock from "roamjs-components/writes/updateBlock";
 import getCurrentPageUid from "roamjs-components/dom/getCurrentPageUid";
 
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
@@ -20,17 +21,10 @@ let valueToCursor: string;
 let OPEN_AI_API_KEY = '';
 
 const sendRequest = (option: any) => {
-  let maxTokens = 60;
-  switch (option.id) {
-    case 'completion_120':
-      maxTokens = 120;
-      break;
-  }
-
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
-  let prompt = '';
+  let prompt = option.preset || '';
   prompt += getTextByBlockUid(parentBlockUid);
   prompt += '\n';
   // add sibling blocks BEFORE the current block
@@ -39,6 +33,7 @@ const sendRequest = (option: any) => {
     prompt += '\n';
     return b.uid === lastEditedBlockUid;
   })
+  prompt += option.presetSuffix || '';
 
   // if there are no other siblings
   if (siblings.length <= 1) {
@@ -49,7 +44,7 @@ const sendRequest = (option: any) => {
     model: 'text-davinci-002',
     prompt: prompt,
     temperature: 0.7,
-    max_tokens: maxTokens
+    max_tokens: option.maxTokens || 60
   }
 
   const url = 'https://api.openai.com/v1/completions'
@@ -65,12 +60,20 @@ const sendRequest = (option: any) => {
   .then(data => {
     const lines = data.choices[0].text.trim().split("\n");
     lines.reverse().map((line: any) => {
-      if (line.trim().length === 0) return; // skip blank lines
+      if (line.trim().length === 0) return; // skip blank line
 
-      createBlock({
-        node: { text: line.trim() },
-        parentUid: lastEditedBlockUid
-      })
+      if (option.operation === 'updateParent') {
+        updateBlock({
+          text: line.trim(),
+          uid: parentBlockUid
+        })
+      }
+      else {
+        createBlock({
+          node: { text: line.trim() },
+          parentUid: lastEditedBlockUid
+        })
+      }
     })
   })
   .catch((error) => {
@@ -113,7 +116,6 @@ export default runExtension({
       }
     };
     appRoot?.addEventListener("keydown", appRootKeydownListener);
-
 
     // read document input
     let menuLoaded = false;

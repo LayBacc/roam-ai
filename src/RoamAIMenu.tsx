@@ -23,11 +23,21 @@ type Props = {
 const OPTIONS = [
   {
     id: 'completion_default',
-    name: '🧠 Completion (60 words)'
+    name: '🧠 Completion (60 words)',
+    maxTokens: 60
   },
   {
     id: 'completion_120',
-    name: '🧠 Completion (120 words)'
+    name: '🧠 Completion (120 words)',
+    maxTokens: 120
+  },
+  {
+    id: 'label_from_examples',
+    name: 'Label parent',
+    maxTokens: 3,
+    operation: 'updateParent',
+    preset: `examples:\n- apple\n- orange\n- pear\n- watermelon\n- tomato\nlabel: fruits\n\nexamples:\n- acrylic paint\n- wood\n- canvas\n- oil paint\n- bronze\nlabel: art media\n\nexamples:\n- blue\n- red\n- yellow\n- green\n- white\nlabel: colors\n\nexamples:\n- French\n- Spanish\n- Italian\n- English\nlabel: languages\n\nexamples:\n`,
+    presetSuffix: 'label: '
   }
 ]  
 

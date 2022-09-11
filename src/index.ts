@@ -1,6 +1,5 @@
 import toConfigPageName from "roamjs-components/util/toConfigPageName";
 import runExtension from "roamjs-components/util/runExtension";
-import { createConfigObserver } from "roamjs-components/components/ConfigPage";
 import addStyle from "roamjs-components/dom/addStyle";
 import createBlock from "roamjs-components/writes/createBlock";
 import updateBlock from "roamjs-components/writes/updateBlock";
@@ -84,11 +83,11 @@ const sendRequest = (option: any) => {
 export default runExtension({
   extensionId, 
   run: ({ extensionAPI }) => {
-    createConfigObserver({ title: CONFIG, config: { tabs: [] } });
-
     const updateAPIKey = (value: string) => {
       OPEN_AI_API_KEY = value.trim();
     }
+
+    updateAPIKey(extensionAPI.settings.get("api_key") as string);
 
     extensionAPI.settings.panel.create({
       tabTitle: "Roam AI",

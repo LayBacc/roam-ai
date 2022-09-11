@@ -6,9 +6,13 @@ The AI extension for Roam.
 - To open the menu, type `qq` in any block.
 
 ## Capabilities
-- **Continuation**: Generate text based on the current block + the current tree. 
-- **Label parent**: Given the children blocks, generate a label for the parent block.
-- **Give examples** (Coming soon)
+#### Continuation: Generate text based on the current block + the current tree.
+https://www.loom.com/share/d152e7a184f94080b8777f595821f43e
+
+#### Label parent: Given the children blocks, generate a label for the parent block.
+https://www.loom.com/share/0880aaabdfed430da11fe9bfc4372973
+
+#### Give examples (Coming soon)
 
 ## Troubleshooting
 

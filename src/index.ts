@@ -156,6 +156,7 @@ export default runExtension({
     };
     document.addEventListener("input", documentInputListener);
   },
-  unload: () => {},
+  unload: () => {
+  },
 });
   

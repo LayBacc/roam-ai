@@ -155,6 +155,13 @@ export default runExtension({
       }
     };
     document.addEventListener("input", documentInputListener);
+
+    return {
+      domListeners: [
+        { type: "input", listener: documentInputListener, el: document },
+        { type: "keydown", el: appRoot, listener: appRootKeydownListener },
+      ]
+    };
   },
   unload: () => {
   },

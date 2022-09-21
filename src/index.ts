@@ -57,6 +57,8 @@ const sendRequest = (option: any) => {
   })
   .then(res => res.json())
   .then(data => {
+    if (data.error) return;
+
     const lines = data.choices[0].text.trim().split("\n");
     lines.reverse().map((line: any) => {
       if (line.trim().length === 0) return; // skip blank line

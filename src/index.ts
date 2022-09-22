@@ -86,6 +86,8 @@ export default runExtension({
   extensionId, 
   run: ({ extensionAPI }) => {
     const updateAPIKey = (value: string) => {
+      if (!value) return;
+
       OPEN_AI_API_KEY = value.trim();
     }
 

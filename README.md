@@ -14,6 +14,8 @@ https://www.loom.com/share/d152e7a184f94080b8777f595821f43e
 Given the children blocks, generate a label for the parent block.
 https://www.loom.com/share/0880aaabdfed430da11fe9bfc4372973
 
+### 😈 Devil's Advocate (Coming soon)
+
 ### Give examples (Coming soon)
 
 ## Troubleshooting

@@ -67,23 +67,30 @@ const RoamAIMenu = ({
 
     (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
-        // const index = Number(menuRef.current.getAttribute("data-active-index"));
-        // const count = menuRef.current.childElementCount;
-        // setActiveIndex((index + 1) % count);
-        // e.stopPropagation();
-        // e.preventDefault();
+
+        const index = Number(menuRef.current.getAttribute("data-active-index"));
+        const count = menuRef.current.childElementCount;
+
+        setActiveIndex((index + 1) % count);
+        e.stopPropagation();
+        e.preventDefault();
+
+        console.log('ARROW DOWN', index, count)
       } else if (e.key === "ArrowUp") {
-        // const index = Number(menuRef.current.getAttribute("data-active-index"));
-        // const count = menuRef.current.childElementCount;
-        // setActiveIndex((index - 1 + count) % count);
-        // e.stopPropagation();
-        // e.preventDefault();
+        const index = Number(menuRef.current.getAttribute("data-active-index"));
+        const count = menuRef.current.childElementCount;
+        setActiveIndex((index - 1 + count) % count);
+        e.stopPropagation();
+        e.preventDefault();
+
+        console.log('ARROW UP', index, count)
+
       } else if (e.key == "ArrowLeft" || e.key === "ArrowRight") {
         // e.stopPropagation();
         // e.preventDefault();
       } else if (e.key === "Enter") {
         const index = Number(menuRef.current.getAttribute("data-active-index"));
-        onSelect(index);
+        onSelect(OPTIONS[index]);
         e.stopPropagation();
         e.preventDefault();
       } else if (e.key === "Escape") {
@@ -115,12 +122,16 @@ const RoamAIMenu = ({
   }, [keydownListener]);
   
   return (
-    <div ref={menuRef} className="bg-white py-1 px-1 drop-shadow-lg">
+    <div 
+      ref={menuRef} 
+      className="bg-white py-1 px-1 drop-shadow-lg"
+      data-active-index={activeIndex}
+    >
       { 
-        OPTIONS.map((option) => {
+        OPTIONS.map((option, index) => {
           return(
             <div 
-              className="text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 w-full cursor-pointer px-1.5 py-1.5"
+              className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
               onClick={() => onSelect(option)}
             >
               { option.name }

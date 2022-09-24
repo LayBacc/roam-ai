@@ -38,6 +38,13 @@ const OPTIONS = [
     operation: 'updateParent',
     preset: `examples:\n- apple\n- orange\n- pear\n- watermelon\n- tomato\nlabel: fruits\n\nexamples:\n- acrylic paint\n- wood\n- canvas\n- oil paint\n- bronze\nlabel: art media\n\nexamples:\n- blue\n- red\n- yellow\n- green\n- white\nlabel: colors\n\nexamples:\n- French\n- Spanish\n- Italian\n- English\nlabel: languages\n\nexamples:\n`,
     presetSuffix: 'label: '
+  },
+  {
+    id: 'devils_advocate',
+    name: '😈 Devil\'s advocate',
+    maxTokens: 80,
+    preset: ``,
+    presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
   }
 ]  
 
@@ -74,17 +81,12 @@ const RoamAIMenu = ({
         setActiveIndex((index + 1) % count);
         e.stopPropagation();
         e.preventDefault();
-
-        console.log('ARROW DOWN', index, count)
       } else if (e.key === "ArrowUp") {
         const index = Number(menuRef.current.getAttribute("data-active-index"));
         const count = menuRef.current.childElementCount;
         setActiveIndex((index - 1 + count) % count);
         e.stopPropagation();
         e.preventDefault();
-
-        console.log('ARROW UP', index, count)
-
       } else if (e.key == "ArrowLeft" || e.key === "ArrowRight") {
         // e.stopPropagation();
         // e.preventDefault();

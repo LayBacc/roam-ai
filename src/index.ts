@@ -19,7 +19,7 @@ let valueToCursor: string;
 
 let OPEN_AI_API_KEY = '';
 
-const sendRequest = (option: any) => {
+const sendRequest = (option: any, model: any) => {
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
@@ -40,7 +40,7 @@ const sendRequest = (option: any) => {
   }
 
   const data = {
-    model: 'text-davinci-002',
+    model: model.name,
     prompt: prompt,
     temperature: 0.7,
     max_tokens: option.maxTokens || 60

@@ -48,69 +48,115 @@ const OPTIONS = [
   }
 ]  
 
+const MODELS = [
+  {
+    name: 'text-davinci-002',
+    displayName: 'text-davinci-002'
+  },
+  {
+    name: 'code-davinci-002',
+    displayName: 'code-davinci-002 (private beta)'
+  }
+]
+
 const RoamAIMenu = ({
   onClose,
   textarea,
   triggerStart,
   triggerRegex,
   extensionAPI,
-  sendRequest
+  sendRequest,
+  model
 }: any) => {
   const { ["block-uid"]: blockUid, ["window-id"]: windowId } = useMemo(
     () => window.roamAlphaAPI.ui.getFocusedBlock(),
     []
   );
   const menuRef = useRef(null);
+  const [modelIndex, setModelIndex] = useState(0);
   const [filter, setFilter] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const onSelect = useCallback(
     (option) => {
-      onClose()
-      sendRequest(option)
+      // onClose()
+      // sendRequest(option, MODELS[modelIndex])
     },
     [menuRef, blockUid, onClose, triggerStart, textarea]
   );
+
   const keydownListener = useCallback(
 
     (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
 
-        const index = Number(menuRef.current.getAttribute("data-active-index"));
-        const count = menuRef.current.childElementCount;
+      console.log("keydownListener", e.key, e.ctrlKey, e.metaKey); 
 
-        setActiveIndex((index + 1) % count);
-        e.stopPropagation();
-        e.preventDefault();
-      } else if (e.key === "ArrowUp") {
-        const index = Number(menuRef.current.getAttribute("data-active-index"));
-        const count = menuRef.current.childElementCount;
-        setActiveIndex((index - 1 + count) % count);
-        e.stopPropagation();
-        e.preventDefault();
-      } else if (e.key == "ArrowLeft" || e.key === "ArrowRight") {
-        // e.stopPropagation();
-        // e.preventDefault();
-      } else if (e.key === "Enter") {
-        const index = Number(menuRef.current.getAttribute("data-active-index"));
-        onSelect(OPTIONS[index]);
-        e.stopPropagation();
-        e.preventDefault();
-      } else if (e.key === "Escape") {
-        onClose();
-      } else {
-        const value =
-          triggerRegex.exec(
-            textarea.value.substring(0, textarea.selectionStart)
-          )?.[1] || "";
-        if (value) {
-          setFilter(value);
-        } else {
+      // switch mode
+      // if (e.ctrlKey || e.metaKey) {
+      //   const modelCount = MODELS.length;
+
+      //   if (e.key === "ArrowUp") {
+      //     console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex - 1 + modelCount) % modelCount)
+
+      //     // setModelIndex(1)//(modelIndex - 1)
+      //     setModelIndex((modelIndex - 1 + modelCount) % modelCount);
+      //     e.stopPropagation();
+      //     e.preventDefault();
+      //     return;
+      //   }
+
+      //   if (e.key === "ArrowDown") {
+      //     console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex + 1) % modelCount)
+
+      //     setModelIndex((modelIndex + 1) % modelCount);
+      //     // setModelIndex(1) // (modelIndex +1)
+
+      //     e.stopPropagation();
+      //     e.preventDefault();
+      //   } 
+
+      //   return;
+      // }
+      // else {
+        console.log("keydown (no cmd), activeIndex: ", activeIndex); 
+
+        if (e.key === "ArrowDown") {
+          const index = Number(menuRef.current.getAttribute("data-active-index"));
+          const count = menuRef.current.childElementCount;
+
+          setActiveIndex((index + 1) % count);
+          e.stopPropagation();
+          e.preventDefault();
+        } else if (e.key === "ArrowUp") {
+          const index = Number(menuRef.current.getAttribute("data-active-index"));
+          const count = menuRef.current.childElementCount;
+          setActiveIndex((index - 1 + count) % count);
+          e.stopPropagation();
+          e.preventDefault();
+        } else if (e.key == "ArrowLeft" || e.key === "ArrowRight") {
+          // e.stopPropagation();
+          // e.preventDefault();
+        } else if (e.key === "Enter") {
+          const index = Number(menuRef.current.getAttribute("data-active-index"));
+          onSelect(OPTIONS[index]);
+          e.stopPropagation();
+          e.preventDefault();
+        } else if (e.key === "Escape") {
           onClose();
-          return;
+        } else {
+          const value =
+            triggerRegex.exec(
+              textarea.value.substring(0, textarea.selectionStart)
+            )?.[1] || "";
+          if (value) {
+            setFilter(value);
+          } else {
+            onClose();
+            return;
+          }
         }
-      }
+      // }
     },
-    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea]
+    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea, modelIndex, activeIndex]
   );
 
   useEffect(() => {
@@ -120,27 +166,42 @@ const RoamAIMenu = ({
     listeningEl.addEventListener("keydown", keydownListener);
     return () => {
       listeningEl.removeEventListener("keydown", keydownListener);
-    };
+    }; 
   }, [keydownListener]);
   
+  const getCurrentModel = () => {
+    return MODELS[modelIndex] //.find(model => model.name === currentModel)
+  }
+
   return (
     <div 
-      ref={menuRef} 
-      className="bg-white py-1 px-1 drop-shadow-lg"
+      
+      className="bg-white drop-shadow-lg"
       data-active-index={activeIndex}
     >
-      { 
-        OPTIONS.map((option, index) => {
-          return(
-            <div 
-              className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
-              onClick={() => onSelect(option)}
-            >
-              { option.name }
-            </div>
-          )
-        })
-      }
+      {/*<div className="px-3 py-3 text-md text-neutral-500 bg-gray-100 border border-l-0 border-t-0 border-r-0 border-b-1 border-gray-300 mb-2 flex items-center gap-x-4">
+        <div className="font-semibold text-gray-500">
+          { getCurrentModel()?.name }
+        </div>
+        <div className="text-gray-500 text-sm">
+          ⌘ + ↑/↓ to select model
+        </div>
+      </div>*/}
+
+      <div className="py-1 px-1" ref={menuRef}>
+        { 
+          OPTIONS.map((option, index) => {
+            return(
+              <div 
+                className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
+                onClick={() => onSelect(option)}
+              >
+                { option.name }
+              </div>
+            )
+          })
+        }
+      </div>
     </div>
   );
 };
@@ -161,9 +222,9 @@ export const render = (props: any) => {
     <RoamAIMenu
       {...props}
       onClose={() => {
-        props.onClose();
-        ReactDOM.unmountComponentAtNode(parent);
-        parent.remove();
+        // props.onClose();
+        // ReactDOM.unmountComponentAtNode(parent);
+        // parent.remove();
       }}
     />,
     parent

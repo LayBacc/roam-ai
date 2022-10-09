@@ -55,7 +55,7 @@ const MODELS = [
   },
   {
     name: 'code-davinci-002',
-    displayName: 'code-davinci-002 (private beta)'
+    displayName: 'code-davinci-002'
   }
 ]
 

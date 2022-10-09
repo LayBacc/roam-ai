@@ -26,4 +26,4 @@ https://www.loom.com/share/27fa0c02861545ce97f2733c57dcf960
 ## Troubleshooting
 
 - If you are unable to open the menu again, press "Esc" to reset.
-- For all , DM me [@Lay_Bacc](https://twitter.com/Lay_Bacc/)
+- For all questions / suggestions, DM me [@Lay_Bacc](https://twitter.com/Lay_Bacc/)

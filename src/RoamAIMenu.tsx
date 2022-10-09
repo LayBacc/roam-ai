@@ -78,10 +78,12 @@ const RoamAIMenu = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const onSelect = useCallback(
     (option) => {
-      // onClose()
-      // sendRequest(option, MODELS[modelIndex])
+      onClose()
+
+      console.log("passing to sendRequest: ", modelIndex, getCurrentModel())
+      sendRequest(option, getCurrentModel())
     },
-    [menuRef, blockUid, onClose, triggerStart, textarea]
+    [menuRef, blockUid, onClose, triggerStart, textarea, modelIndex]
   );
 
   const keydownListener = useCallback(
@@ -91,32 +93,32 @@ const RoamAIMenu = ({
       console.log("keydownListener", e.key, e.ctrlKey, e.metaKey); 
 
       // switch mode
-      // if (e.ctrlKey || e.metaKey) {
-      //   const modelCount = MODELS.length;
+      if (e.ctrlKey || e.metaKey) {
+        const modelCount = MODELS.length;
 
-      //   if (e.key === "ArrowUp") {
-      //     console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex - 1 + modelCount) % modelCount)
+        if (e.key === "ArrowUp") {
+          console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex - 1 + modelCount) % modelCount)
 
-      //     // setModelIndex(1)//(modelIndex - 1)
-      //     setModelIndex((modelIndex - 1 + modelCount) % modelCount);
-      //     e.stopPropagation();
-      //     e.preventDefault();
-      //     return;
-      //   }
+          // setModelIndex(1)//(modelIndex - 1)
+          setModelIndex((modelIndex - 1 + modelCount) % modelCount);
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
 
-      //   if (e.key === "ArrowDown") {
-      //     console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex + 1) % modelCount)
+        if (e.key === "ArrowDown") {
+          console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex + 1) % modelCount)
 
-      //     setModelIndex((modelIndex + 1) % modelCount);
-      //     // setModelIndex(1) // (modelIndex +1)
+          setModelIndex((modelIndex + 1) % modelCount);
+          // setModelIndex(1) // (modelIndex +1)
 
-      //     e.stopPropagation();
-      //     e.preventDefault();
-      //   } 
+          e.stopPropagation();
+          e.preventDefault();
+        } 
 
-      //   return;
-      // }
-      // else {
+        return;
+      }
+      else {
         console.log("keydown (no cmd), activeIndex: ", activeIndex); 
 
         if (e.key === "ArrowDown") {
@@ -154,9 +156,9 @@ const RoamAIMenu = ({
             return;
           }
         }
-      // }
+      }
     },
-    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea]
+    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea, modelIndex, activeIndex]
   );
 
   useEffect(() => {
@@ -175,20 +177,22 @@ const RoamAIMenu = ({
 
   return (
     <div 
-      ref={menuRef}
       className="bg-white drop-shadow-lg"
-      data-active-index={activeIndex}
     >
-      {/*<div className="px-3 py-3 text-md text-neutral-500 bg-gray-100 border border-l-0 border-t-0 border-r-0 border-b-1 border-gray-300 mb-2 flex items-center gap-x-4">
+      <div className="px-3 py-3 text-md text-neutral-500 bg-gray-100 border border-l-0 border-t-0 border-r-0 border-b-1 border-gray-300 mb-2 flex items-center gap-x-4">
         <div className="font-semibold text-gray-500">
-          { getCurrentModel()?.name }
+          { getCurrentModel()?.displayName }
         </div>
         <div className="text-gray-500 text-sm">
           ⌘ + ↑/↓ to select model
         </div>
-      </div>*/}
+      </div>
 
-      <div className="py-1 px-1" >
+      <div 
+        className="py-1 px-1" 
+        ref={menuRef}
+        data-active-index={activeIndex}
+      >
         { 
           OPTIONS.map((option, index) => {
             return(
@@ -222,9 +226,9 @@ export const render = (props: any) => {
     <RoamAIMenu
       {...props}
       onClose={() => {
-        // props.onClose();
-        // ReactDOM.unmountComponentAtNode(parent);
-        // parent.remove();
+        props.onClose();
+        ReactDOM.unmountComponentAtNode(parent);
+        parent.remove();
       }}
     />,
     parent

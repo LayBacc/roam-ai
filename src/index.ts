@@ -46,6 +46,8 @@ const sendRequest = (option: any, model: any) => {
     max_tokens: option.maxTokens || 60
   }
 
+  console.log("sending request payload", data)
+
   const url = 'https://api.openai.com/v1/completions'
   fetch(url, {
     method: 'POST',

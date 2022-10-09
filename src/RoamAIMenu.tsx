@@ -156,7 +156,7 @@ const RoamAIMenu = ({
         }
       // }
     },
-    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea, modelIndex, activeIndex]
+    [menuRef, setActiveIndex, setFilter, onClose, triggerRegex, textarea]
   );
 
   useEffect(() => {
@@ -175,7 +175,7 @@ const RoamAIMenu = ({
 
   return (
     <div 
-      
+      ref={menuRef}
       className="bg-white drop-shadow-lg"
       data-active-index={activeIndex}
     >
@@ -188,7 +188,7 @@ const RoamAIMenu = ({
         </div>
       </div>*/}
 
-      <div className="py-1 px-1" ref={menuRef}>
+      <div className="py-1 px-1" >
         { 
           OPTIONS.map((option, index) => {
             return(

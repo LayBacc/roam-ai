@@ -36,6 +36,11 @@ const OPTIONS = [
     name: '🧠 Completion (max)'
   },
   {
+    id: 'completion_no_history',
+    name: '📍 Local Completion (current block only)',
+    maxTokens: 60
+  },
+  {
     id: 'label_from_examples',
     name: 'Label parent',
     maxTokens: 3,
@@ -57,10 +62,11 @@ const MODELS = [
     name: 'text-davinci-002',
     displayName: 'text-davinci-002'
   },
-  {
-    name: 'code-davinci-002',
-    displayName: 'code-davinci-002'
-  }
+  // Codex is still in private beta:
+  // {
+  //   name: 'code-davinci-002',
+  //   displayName: 'code-davinci-002'
+  // }
 ]
 
 const RoamAIMenu = ({
@@ -70,6 +76,7 @@ const RoamAIMenu = ({
   triggerRegex,
   extensionAPI,
   sendRequest,
+  customModels,
   model
 }: any) => {
   const { ["block-uid"]: blockUid, ["window-id"]: windowId } = useMemo(
@@ -90,6 +97,10 @@ const RoamAIMenu = ({
     [menuRef, blockUid, onClose, triggerStart, textarea, modelIndex]
   );
 
+  const getAllModels = () => {
+    return MODELS.concat(customModels || []);
+  }
+
   const keydownListener = useCallback(
 
     (e: KeyboardEvent) => {
@@ -98,7 +109,7 @@ const RoamAIMenu = ({
 
       // switch mode
       if (e.ctrlKey || e.metaKey) {
-        const modelCount = MODELS.length;
+        const modelCount = getAllModels().length;
 
         if (e.key === "ArrowUp") {
           console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex - 1 + modelCount) % modelCount)
@@ -176,7 +187,7 @@ const RoamAIMenu = ({
   }, [keydownListener]);
   
   const getCurrentModel = () => {
-    return MODELS[modelIndex] //.find(model => model.name === currentModel)
+    return getAllModels()[modelIndex] //.find(model => model.name === currentModel)
   }
 
   return (

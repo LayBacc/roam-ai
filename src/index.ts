@@ -19,28 +19,37 @@ let valueToCursor: string;
 
 let OPEN_AI_API_KEY = '';
 let MAX_TOKENS = 256;
+let CONTENT_TAG = '';
+let CUSTOM_MODELS:any = [];
 
 const sendRequest = (option: any, model: any) => {
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
   let prompt = option.preset || '';
-  prompt += getTextByBlockUid(parentBlockUid);
-  prompt += '\n';
-  // add sibling blocks BEFORE the current block
-  siblings.find((b) => {
-    prompt += getTextByBlockUid(b.uid).replace(new RegExp('qq$'), '')
-    prompt += '\n';
-    return b.uid === lastEditedBlockUid;
-  })
-  prompt += option.presetSuffix || '';
 
-  // if there are no other siblings
-  if (siblings.length <= 1) {
+  if (option.id === 'completion_no_history') {
     prompt += valueToCursor.replace(new RegExp('qq$'), '');
   }
+  else {
+    prompt += getTextByBlockUid(parentBlockUid);
+    prompt += '\n';
 
-  const data = {
+    // add sibling blocks BEFORE the current block
+    siblings.find((b) => {
+      prompt += getTextByBlockUid(b.uid).replace(new RegExp('qq$'), '')
+      prompt += '\n';
+      return b.uid === lastEditedBlockUid;
+    })
+    prompt += option.presetSuffix || '';
+
+    if (siblings.length <= 1) {
+      prompt += valueToCursor.replace(new RegExp('qq$'), '');
+    }
+  }
+
+  // build the request payload
+  let data = {
     model: model.name,
     prompt: prompt,
     temperature: 0.7,
@@ -49,7 +58,13 @@ const sendRequest = (option: any, model: any) => {
 
   console.log("sending request payload", data)
 
-  const url = 'https://api.openai.com/v1/completions'
+  // replace the "qq" text
+  updateBlock({
+    text: getTextByBlockUid(lastEditedBlockUid).replace(new RegExp(' qq$'), ` ${CONTENT_TAG}`),
+    uid: lastEditedBlockUid
+  })
+
+  const url = model.endpoint || 'https://api.openai.com/v1/completions'
   fetch(url, {
     method: 'POST',
     headers: {
@@ -62,7 +77,10 @@ const sendRequest = (option: any, model: any) => {
   .then(data => {
     if (data.error) return;
 
-    const lines = data.choices[0].text.trim().split("\n");
+    console.log("data from response", data)
+
+    const text = data?.text ? data.text : data.choices[0].text.trim();  // depending on the endpoint
+    const lines = text.split("\n");
     lines.reverse().map((line: any) => {
       if (line.trim().length === 0) return; // skip blank line
 
@@ -98,8 +116,24 @@ export default runExtension({
       MAX_TOKENS = Number(value.trim());
     }    
 
+    const updateContentTag = (value: string) => {
+      if (!value) return;
+      CONTENT_TAG = value.trim();
+    }    
+
+    const updateCustomModels = (value: string) => {
+      if (!value) return;
+
+      try {
+        CUSTOM_MODELS = JSON.parse(value.trim());
+      }
+      catch (err) {}
+    }
+
     updateAPIKey(extensionAPI.settings.get("api_key") as string);
     updateMaxTokens(extensionAPI.settings.get("max_tokens") as string);
+    updateContentTag(extensionAPI.settings.get("content_tag") as string);
+    updateCustomModels(extensionAPI.settings.get("custom_models") as any);
 
     extensionAPI.settings.panel.create({
       tabTitle: "Roam AI",
@@ -124,7 +158,29 @@ export default runExtension({
           id: "max_tokens",
           name: "Maximum length",
           description:
-            "The maximnum number of words to generate",
+            "The maximnum number of words to generate. Default is 256.",
+        },
+        {
+          action: {
+            type: "input",
+            onChange: (e) => updateContentTag(e.target.value),
+            placeholder: "[[qq]]",
+          },
+          id: "content_tag",
+          name: "Content tag",
+          description:
+            "A string to replace 'qq' with. Default is blank.",
+        },
+        {
+          action: {
+            type: "input",
+            onChange: (e) => updateCustomModels(e.target.value),
+            placeholder: '[{ "name": "model A", "endpoint": "closedai.com/v1/completions", "displayName": "model A", "model": "model-001" }]',
+          },
+          id: "custom_models",
+          name: "Custom models",
+          description:
+            "Bring your own endpoints.",
         },
       ],
     });
@@ -170,6 +226,7 @@ export default runExtension({
             triggerStart: match.index,
             sendRequest,
             extensionAPI,
+            customModels: CUSTOM_MODELS,
             onClose: () => {
               menuLoaded = false;
             },

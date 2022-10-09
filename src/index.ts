@@ -18,6 +18,7 @@ let lastEditedBlockUid: string;
 let valueToCursor: string;
 
 let OPEN_AI_API_KEY = '';
+let MAX_TOKENS = 256;
 
 const sendRequest = (option: any, model: any) => {
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
@@ -43,7 +44,7 @@ const sendRequest = (option: any, model: any) => {
     model: model.name,
     prompt: prompt,
     temperature: 0.7,
-    max_tokens: option.maxTokens || 60
+    max_tokens: option.maxTokens || MAX_TOKENS
   }
 
   console.log("sending request payload", data)
@@ -89,11 +90,16 @@ export default runExtension({
   run: ({ extensionAPI }) => {
     const updateAPIKey = (value: string) => {
       if (!value) return;
-
       OPEN_AI_API_KEY = value.trim();
     }
 
+    const updateMaxTokens = (value: string) => {
+      if (!value) return;
+      MAX_TOKENS = Number(value.trim());
+    }    
+
     updateAPIKey(extensionAPI.settings.get("api_key") as string);
+    updateMaxTokens(extensionAPI.settings.get("max_tokens") as string);
 
     extensionAPI.settings.panel.create({
       tabTitle: "Roam AI",
@@ -108,6 +114,17 @@ export default runExtension({
           name: "API key",
           description:
             "Your Open AI API key",
+        },
+        {
+          action: {
+            type: "input",
+            onChange: (e) => updateMaxTokens(e.target.value),
+            placeholder: "256",
+          },
+          id: "max_tokens",
+          name: "Maximum length",
+          description:
+            "The maximnum number of words to generate",
         },
       ],
     });

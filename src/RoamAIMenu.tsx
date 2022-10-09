@@ -32,6 +32,10 @@ const OPTIONS = [
     maxTokens: 120
   },
   {
+    id: 'completion_max',
+    name: '🧠 Completion (max)'
+  },
+  {
     id: 'label_from_examples',
     name: 'Label parent',
     maxTokens: 3,

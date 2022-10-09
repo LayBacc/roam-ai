@@ -6,9 +6,12 @@ The AI extension for Roam.
 - To open the menu, type `qq` in any block.
 
 ## Capabilities
-### Continuation: 
+### Completion: 
 Generate text based on the current block + the current tree.
 https://www.loom.com/share/d152e7a184f94080b8777f595821f43e
+
+### 📍 Local Completion
+Generate text based on the current block only.
 
 ### Label parent: 
 Given the children blocks, generate a label for the parent block.
@@ -23,3 +26,4 @@ https://www.loom.com/share/27fa0c02861545ce97f2733c57dcf960
 ## Troubleshooting
 
 - If you are unable to open the menu again, press "Esc" to reset.
+- For all , DM me [@Lay_Bacc](https://twitter.com/Lay_Bacc/)

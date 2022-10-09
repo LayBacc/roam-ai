@@ -76,8 +76,7 @@ const RoamAIMenu = ({
   triggerRegex,
   extensionAPI,
   sendRequest,
-  customModels,
-  model
+  customModels
 }: any) => {
   const { ["block-uid"]: blockUid, ["window-id"]: windowId } = useMemo(
     () => window.roamAlphaAPI.ui.getFocusedBlock(),
@@ -90,8 +89,6 @@ const RoamAIMenu = ({
   const onSelect = useCallback(
     (option) => {
       onClose()
-
-      console.log("passing to sendRequest: ", modelIndex, getCurrentModel())
       sendRequest(option, getCurrentModel())
     },
     [menuRef, blockUid, onClose, triggerStart, textarea, modelIndex]
@@ -104,16 +101,11 @@ const RoamAIMenu = ({
   const keydownListener = useCallback(
 
     (e: KeyboardEvent) => {
-
-      console.log("keydownListener", e.key, e.ctrlKey, e.metaKey); 
-
       // switch mode
       if (e.ctrlKey || e.metaKey) {
         const modelCount = getAllModels().length;
 
         if (e.key === "ArrowUp") {
-          console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex - 1 + modelCount) % modelCount)
-
           // setModelIndex(1)//(modelIndex - 1)
           setModelIndex((modelIndex - 1 + modelCount) % modelCount);
           e.stopPropagation();
@@ -122,8 +114,6 @@ const RoamAIMenu = ({
         }
 
         if (e.key === "ArrowDown") {
-          console.log("modelIndex ", modelIndex, ", modelCount", modelCount, (modelIndex + 1) % modelCount)
-
           setModelIndex((modelIndex + 1) % modelCount);
           // setModelIndex(1) // (modelIndex +1)
 
@@ -134,8 +124,6 @@ const RoamAIMenu = ({
         return;
       }
       else {
-        console.log("keydown (no cmd), activeIndex: ", activeIndex); 
-
         if (e.key === "ArrowDown") {
           const index = Number(menuRef.current.getAttribute("data-active-index"));
           const count = menuRef.current.childElementCount;
@@ -187,7 +175,7 @@ const RoamAIMenu = ({
   }, [keydownListener]);
   
   const getCurrentModel = () => {
-    return getAllModels()[modelIndex] //.find(model => model.name === currentModel)
+    return getAllModels()[modelIndex];
   }
 
   return (

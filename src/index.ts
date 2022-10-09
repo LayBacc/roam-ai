@@ -56,8 +56,6 @@ const sendRequest = (option: any, model: any) => {
     max_tokens: option.maxTokens || MAX_TOKENS
   }
 
-  console.log("sending request payload", data)
-
   // replace the "qq" text
   updateBlock({
     text: getTextByBlockUid(lastEditedBlockUid).replace(new RegExp(' qq$'), ` ${CONTENT_TAG}`),
@@ -76,8 +74,6 @@ const sendRequest = (option: any, model: any) => {
   .then(res => res.json())
   .then(data => {
     if (data.error) return;
-
-    console.log("data from response", data)
 
     const text = data?.text ? data.text : data.choices[0].text.trim();  // depending on the endpoint
     const lines = text.split("\n");

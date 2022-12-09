@@ -18,9 +18,10 @@ Say it in another way.
 
 This reads only the current block (local). 
 
-### Label parent: 
-Given the children blocks, generate a label for the parent block.
-https://www.loom.com/share/0880aaabdfed430da11fe9bfc4372973
+### 🌅 Generate Image
+Generate an image using DALL-E 2. 
+
+This reads only the current block (local). 
 
 ### 😈 Devil's Advocate 
 Break out of your own bubble. Get perspectives other than your own. 

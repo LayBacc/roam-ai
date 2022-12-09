@@ -28,8 +28,9 @@ const sendRequest = (option: any, model: any) => {
 
   let prompt = option.preset || '';
 
-  if (option.id === 'completion_no_history') {
+  if (option.local) {
     prompt += valueToCursor.replace(new RegExp('qq$'), '');
+    prompt += option.presetSuffix || '';
   }
   else {
     prompt += getTextByBlockUid(parentBlockUid);

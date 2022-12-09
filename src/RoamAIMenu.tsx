@@ -38,7 +38,16 @@ const OPTIONS = [
   {
     id: 'completion_no_history',
     name: '📍 Local Completion (current block only)',
-    maxTokens: 60
+    maxTokens: 60,
+    local: true
+  },
+  {
+    id: 'rephrase',
+    name: '🔄 Rephrase',
+    maxTokens: 120,
+    preset: '```\n',
+    presetSuffix: '```\nGenerate a variation of the text above. Ideally make it shorter and more engaging.',
+    local: true
   },
   {
     id: 'label_from_examples',
@@ -59,8 +68,20 @@ const OPTIONS = [
 
 const MODELS = [
   {
-    name: 'text-davinci-002',
-    displayName: 'text-davinci-002'
+    name: 'text-davinci-003',
+    displayName: 'text-davinci-003'
+  },
+  {
+    name: 'text-curie-001',
+    displayName: 'text-curie-001'
+  },
+  {
+    name: 'text-babbage-001',
+    displayName: 'text-babbage-001'
+  },
+  {
+    name: 'text-ada-001',
+    displayName: 'text-ada-001'
   },
   // Codex is still in private beta:
   // {

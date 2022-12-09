@@ -50,11 +50,23 @@ const sendRequest = (option: any, model: any) => {
   }
 
   // build the request payload
-  let data = {
-    model: model.name,
-    prompt: prompt,
-    temperature: 0.7,
-    max_tokens: option.maxTokens || MAX_TOKENS
+  let data;
+  let url;
+  if (option?.outputType === 'image') {
+    url = 'https://api.openai.com/v1/images/generations'
+    data = {
+      prompt: prompt,
+      n: 1
+    }
+  }
+  else {
+    url = model.endpoint || 'https://api.openai.com/v1/completions';
+    data = {
+      model: model.name,
+      prompt: prompt,
+      temperature: 0.7,
+      max_tokens: option.maxTokens || MAX_TOKENS
+    }
   }
 
   // replace the "qq" text
@@ -63,7 +75,6 @@ const sendRequest = (option: any, model: any) => {
     uid: lastEditedBlockUid
   })
 
-  const url = model.endpoint || 'https://api.openai.com/v1/completions'
   fetch(url, {
     method: 'POST',
     headers: {
@@ -75,6 +86,15 @@ const sendRequest = (option: any, model: any) => {
   .then(res => res.json())
   .then(data => {
     if (data.error) return;
+
+    if (option?.outputType === 'image') {
+      const output = `![](${data.data?.[0]?.url})`
+      createBlock({
+        node: { text: output },
+        parentUid: lastEditedBlockUid
+      })
+      return;
+    }
 
     const text = data?.text ? data.text : data.choices[0].text.trim();  // depending on the endpoint
     const lines = text.split("\n");

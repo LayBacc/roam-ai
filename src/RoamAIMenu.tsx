@@ -38,7 +38,7 @@ const OPTIONS = [
   {
     id: 'completion_no_history',
     name: '📍 Local Completion (current block only)',
-    maxTokens: 60,
+    maxTokens: 120,
     local: true
   },
   {
@@ -50,13 +50,19 @@ const OPTIONS = [
     local: true
   },
   {
-    id: 'label_from_examples',
-    name: 'Label parent',
-    maxTokens: 3,
-    operation: 'updateParent',
-    preset: `examples:\n- apple\n- orange\n- pear\n- watermelon\n- tomato\nlabel: fruits\n\nexamples:\n- acrylic paint\n- wood\n- canvas\n- oil paint\n- bronze\nlabel: art media\n\nexamples:\n- blue\n- red\n- yellow\n- green\n- white\nlabel: colors\n\nexamples:\n- French\n- Spanish\n- Italian\n- English\nlabel: languages\n\nexamples:\n`,
-    presetSuffix: 'label: '
+    id: 'generate-image',
+    name: '🌅 Generate image',
+    local: true,
+    outputType: 'image'
   },
+  // {
+  //   id: 'label_from_examples',
+  //   name: 'Label parent',
+  //   maxTokens: 3,
+  //   operation: 'updateParent',
+  //   preset: `examples:\n- apple\n- orange\n- pear\n- watermelon\n- tomato\nlabel: fruits\n\nexamples:\n- acrylic paint\n- wood\n- canvas\n- oil paint\n- bronze\nlabel: art media\n\nexamples:\n- blue\n- red\n- yellow\n- green\n- white\nlabel: colors\n\nexamples:\n- French\n- Spanish\n- Italian\n- English\nlabel: languages\n\nexamples:\n`,
+  //   presetSuffix: 'label: '
+  // },
   {
     id: 'devils_advocate',
     name: '😈 Devil\'s advocate',

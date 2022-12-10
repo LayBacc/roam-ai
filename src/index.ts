@@ -23,6 +23,7 @@ let CONTENT_TAG = '';
 let CUSTOM_MODELS:any = [];
 
 const sendRequest = (option: any, model: any) => {
+  const targetBlockUid = lastEditedBlockUid;
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
@@ -91,7 +92,7 @@ const sendRequest = (option: any, model: any) => {
       const output = `![](${data.data?.[0]?.url})`
       createBlock({
         node: { text: output },
-        parentUid: lastEditedBlockUid
+        parentUid: targetBlockUid
       })
       return;
     }
@@ -110,7 +111,7 @@ const sendRequest = (option: any, model: any) => {
       else {
         createBlock({
           node: { text: line.trim() },
-          parentUid: lastEditedBlockUid
+          parentUid: targetBlockUid
         })
       }
     })

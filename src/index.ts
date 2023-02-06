@@ -8,6 +8,9 @@ import getCurrentPageUid from "roamjs-components/dom/getCurrentPageUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
+import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
+import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 
 import { render as renderMenu } from "./RoamAIMenu";
 
@@ -22,12 +25,88 @@ let MAX_TOKENS = 256;
 let CONTENT_TAG = '';
 let CUSTOM_MODELS:any = [];
 
+const normalizePageTitle = (title: string): string =>
+  title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+const parseModulesFromString = (rawString: string) => {
+  const output = [] as any;
+
+  const matches = rawString.match(/\[\[(.*?)\]\]|\(\((.*?)\)\)/g);
+
+  matches.forEach(match => {
+    const isPageReference = match.startsWith("[[")
+    const title = isPageReference ? match.slice(2, match.length - 2) : null;
+    const id = isPageReference ? null : match.slice(2, match.length - 2);
+
+    output.push({
+      title,
+      id,
+      type: isPageReference ? "page" : "block"
+    });
+  });
+  return output;
+}
+
+const parseRoamTree = (data: any, level: number = 0): string => {
+  let result = '';
+  for (const block of data) {
+    if (block.text) {
+      // add the current block to the result
+      result += `${'\t'.repeat(level)}- ${block.text}\n`;
+
+      // check for nested blocks
+      if (block.children && block.children.length > 0) {
+        result += parseRoamTree(block.children, level + 1);
+      }
+    }
+  }
+  return result;
+}
+
+const loadContext = ({ parentBlockUid, targetBlockUid, siblings }: any) => {
+  let contextRaw = '';
+  // add sibling blocks BEFORE the current block
+  siblings.find((b: any) => {
+    contextRaw += b.text.replace(new RegExp('qq$'), '');
+    return b.uid === lastEditedBlockUid;
+  })
+
+  const contextModules = parseModulesFromString(contextRaw)
+  
+  let fullContext = '';
+  contextModules.map((contextModule: any) => {
+    let blockUid = contextModule.id;
+    let title = contextModule.title;
+    if (contextModule.type === 'page') {
+      blockUid = getPageUidByPageTitle(contextModule.title)
+    }
+
+    if (contextModule.type === 'block') {
+      title = getTextByBlockUid(blockUid)
+    }
+
+    const tree = getFullTreeByParentUid(blockUid);
+    
+    fullContext += `### ${title}`;
+    fullContext += parseRoamTree(tree.children, 0);
+    fullContext += '\n\n\n';
+  })
+
+  return fullContext;
+}
+
 const sendRequest = (option: any, model: any) => {
   const targetBlockUid = lastEditedBlockUid;
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
-  let prompt = option.preset || '';
+  let prompt : any;
+  if (option?.id === 'load_context') {
+    prompt = loadContext({ parentBlockUid, targetBlockUid, siblings });
+  }
+  else {
+    prompt = option.preset || '';
+  }
 
   if (option.local) {
     prompt += valueToCursor.replace(new RegExp('qq$'), '');
@@ -74,7 +153,7 @@ const sendRequest = (option: any, model: any) => {
   updateBlock({
     text: getTextByBlockUid(lastEditedBlockUid).replace(new RegExp(' qq$'), ` ${CONTENT_TAG}`),
     uid: lastEditedBlockUid
-  })
+  });
 
   fetch(url, {
     method: 'POST',
@@ -100,17 +179,30 @@ const sendRequest = (option: any, model: any) => {
     const text = data?.text ? data.text : data.choices[0].text.trim();  // depending on the endpoint
     const lines = text.split("\n");
     lines.reverse().map((line: any) => {
-      if (line.trim().length === 0) return; // skip blank line
+      line = line.trim().replace(/^- /, '');
+
+      if (line.length === 0) return; // skip blank line
+
 
       if (option.operation === 'updateParent') {
         updateBlock({
-          text: line.trim(),
+          text: line,
           uid: parentBlockUid
+        })
+      }
+      // bullet point
+      else if (line.startsWith('- ')) {
+        // insert into the last child
+        console.log('try getting target block', getShallowTreeByParentUid(targetBlockUid))
+
+        createBlock({
+          node: { text: line },
+          parentUid: targetBlockUid
         })
       }
       else {
         createBlock({
-          node: { text: line.trim() },
+          node: { text: line },
           parentUid: targetBlockUid
         })
       }
@@ -124,6 +216,46 @@ const sendRequest = (option: any, model: any) => {
 export default runExtension({
   extensionId, 
   run: ({ extensionAPI }) => {
+    const style = addStyle(`.roamjs-smartblocks-popover-target {
+  display:inline-block;
+  height:14px;
+  width:17px;
+  margin-right:7px;
+}
+.bp3-portal {
+  z-index: 1000;
+}
+.roamjs-smartblocks-store-item {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 12px 0;
+  cursor: pointer;
+  font-size: 12px;   
+  border: 1px solid #10161a26;
+  background: white;
+  border-radius: 24px;
+}
+.roamjs-smartblocks-store-item:hover {
+  box-shadow: 0px 3px 6px #00000040;
+  transform: translate(0,-3px);
+}
+.roamjs-smartblocks-store-label .bp3-popover-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.roamjs-smartblocks-store-tabs .bp3-tab-list {
+  justify-content: space-around;
+}
+.roamjs-smartblocks-store-tabs {
+  height: 48px;
+}
+.roamjs-smartblock-menu {
+  width: 300px;
+}`);
+
     const updateAPIKey = (value: string) => {
       if (!value) return;
       OPEN_AI_API_KEY = value.trim();
@@ -255,6 +387,7 @@ export default runExtension({
     document.addEventListener("input", documentInputListener);
 
     return {
+      elements: [style],
       domListeners: [
         { type: "input", listener: documentInputListener, el: document },
         { type: "keydown", el: appRoot, listener: appRootKeydownListener },

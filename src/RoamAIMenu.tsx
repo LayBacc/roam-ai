@@ -69,6 +69,12 @@ const OPTIONS = [
     maxTokens: 80,
     preset: ``,
     presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
+  },
+  {
+    id: 'load_context',
+    name: '🧱 Load context',
+    // preset: ``,
+    // presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
   }
 ]  
 

@@ -30,14 +30,14 @@ https://www.loom.com/share/27fa0c02861545ce97f2733c57dcf960
 
 ### 🧱 Load Context
 
-##### what gets included in the prompt:
+#### what gets included in the prompt:
 within the parent tree, the content of all [[]] and (()) above the current block will be loaded
 
-##### suggested use A: container parent block
+#### suggested use A: container parent block
 
 ![](https://figmage.com/images/c8w8ptS_K8mmTH7Wvb1Ey.png)
 
-##### suggested use B: container page
+#### suggested use B: container page
 
 ![](https://figmage.com/images/eOTqXKeZmbj-R-vLhs2Iz.png)
 

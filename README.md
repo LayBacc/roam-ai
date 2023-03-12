@@ -6,27 +6,20 @@ The AI extension for Roam.
 - To open the menu, type `qq` in any block.
 
 ## Capabilities
-### Completion: 
-Generate text based on the current block + the current tree.
+### ▶️ Continue: 
+Text completion based on the current block + the current tree.
 https://www.loom.com/share/d152e7a184f94080b8777f595821f43e
 
-### 📍 Local Completion
-Generate text based on the current block only.
+### 💬 Chat
+Have a conversation based on the context in the current page
 
-### 🔄 Rephrase
-Say it in another way.
+First start a chat room with the "Open AI Chat Roam" command.
 
-This reads only the current block (local). 
+Inside that page, use "Chat" to continue the convo.
 
-### 🌅 Generate Image
-Generate an image using DALL-E 2. 
+AI rseponses are tagged with `[assistant]:`
 
-This reads only the current block (local). 
-
-### 😈 Devil's Advocate 
-Break out of your own bubble. Get perspectives other than your own. 
-https://www.loom.com/share/27fa0c02861545ce97f2733c57dcf960
-
+https://www.loom.com/share/767dd9853bb2466aa9490c444d361c67
 
 ### 🧱 Load Context
 
@@ -40,6 +33,20 @@ within the parent tree, the content of all [[]] and (()) above the current block
 #### suggested use B: container page
 
 ![](https://figmage.com/images/eOTqXKeZmbj-R-vLhs2Iz.png)
+
+### 🌅 Generate Image
+Generate an image using DALL-E 2. 
+
+This reads only the current block. 
+
+### 🔄 Rephrase
+Say it in another way.
+
+This reads only the current block. 
+
+### 😈 Devil's Advocate 
+Break out of your own bubble. Get perspectives other than your own. 
+https://www.loom.com/share/27fa0c02861545ce97f2733c57dcf960
 
 
 ## Troubleshooting

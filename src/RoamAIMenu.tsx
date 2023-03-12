@@ -46,18 +46,18 @@ const OPTIONS = [
     local: true
   },
   {
+    id: 'generate-image',
+    name: '🌅 Generate image',
+    local: true,
+    outputType: 'image'
+  },
+  {
     id: 'rephrase',
     name: '🔄 Rephrase',
     maxTokens: 120,
     preset: '```\n',
     presetSuffix: '```\nGenerate a variation of the text above. Ideally make it shorter and more engaging.',
     local: true
-  },
-  {
-    id: 'generate-image',
-    name: '🌅 Generate image',
-    local: true,
-    outputType: 'image'
   },
   // {
   //   id: 'label_from_examples',

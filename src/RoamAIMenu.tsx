@@ -22,23 +22,27 @@ type Props = {
 
 const OPTIONS = [
   {
-    id: 'completion_default',
-    name: '🧠 Completion (60 words)',
-    maxTokens: 60
-  },
-  {
-    id: 'completion_120',
-    name: '🧠 Completion (120 words)',
-    maxTokens: 120
-  },
-  {
     id: 'completion_max',
-    name: '🧠 Completion (max)'
+    name: '▶️ Complete'
+  },
+  {
+    id: 'continue_default',
+    name: '▶️ Complete (full page context)',
+    fullPage: true
+  },
+  {
+    id: 'chat',
+    name: '💬 Chat',
+    outputType: 'chat'
+  },
+  {
+    id: 'open_chatroam',
+    name: '💬 Open AI ChatRoam'
   },
   {
     id: 'completion_no_history',
-    name: '📍 Local Completion (current block only)',
-    maxTokens: 120,
+    name: '▶️ Complete (no context)',
+    // maxTokens: 120,
     local: true
   },
   {
@@ -75,7 +79,7 @@ const OPTIONS = [
     name: '🧱 Load context',
     // preset: ``,
     // presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
-  }
+  },
 ]  
 
 const MODELS = [
@@ -208,6 +212,12 @@ const RoamAIMenu = ({
   }, [keydownListener]);
   
   const getCurrentModel = () => {
+    if (OPTIONS[activeIndex]?.id === 'chat') {
+      return {
+        name: 'gpt-3.5-turbo',
+        displayName: 'gpt-3.5-turbo'
+      }
+    }
     return getAllModels()[modelIndex];
   }
 
@@ -233,7 +243,7 @@ const RoamAIMenu = ({
           OPTIONS.map((option, index) => {
             return(
               <div 
-                className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
+                className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 font-medium w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
                 onClick={() => onSelect(option)}
               >
                 { option.name }

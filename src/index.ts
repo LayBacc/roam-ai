@@ -5,12 +5,16 @@ import createBlock from "roamjs-components/writes/createBlock";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import getCurrentPageUid from "roamjs-components/dom/getCurrentPageUid";
 
+import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
+
+import Hashids from 'hashids'
 
 import { render as renderMenu } from "./RoamAIMenu";
 
@@ -22,8 +26,11 @@ let valueToCursor: string;
 
 let OPEN_AI_API_KEY = '';
 let MAX_TOKENS = 256;
+let MAX_WINDOW_SIZE = 4000;
 let CONTENT_TAG = '';
 let CUSTOM_MODELS:any = [];
+
+const hashids = new Hashids();
 
 const normalizePageTitle = (title: string): string =>
   title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -100,9 +107,37 @@ const sendRequest = (option: any, model: any) => {
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
 
+  if (option?.id === 'open_chatroam') {
+    // generate a new page
+    const seed = Date.now();
+    const roomId = hashids.encode(seed);
+    const roomPage = `[[ChatRoam ${roomId}]]`;
+
+    createBlock({
+      node: { text: roomPage },
+      parentUid: targetBlockUid
+    })
+    return;
+  }
+
   let prompt : any;
   if (option?.id === 'load_context') {
     prompt = loadContext({ parentBlockUid, targetBlockUid, siblings });
+  }
+  else if (option?.id === 'continue_default') {
+    prompt = 'current page context: \n```\n';
+
+    const pageTitle = getPageTitleByBlockUid(targetBlockUid); 
+    const currPageUid = getPageUidByPageTitle(pageTitle); // getPageUidByBlockUid(targetBlockUid);
+
+    // add full page context to prompt
+    const tree = getFullTreeByParentUid(currPageUid);
+    prompt += parseRoamTree(tree.children, 0).slice(-MAX_WINDOW_SIZE);
+    prompt += '\n```\n';
+
+    // current block content 
+    prompt += getTextByBlockUid(targetBlockUid).replace(new RegExp('qq$'), '');
+    prompt += '\n';
   }
   else {
     prompt = option.preset || '';
@@ -112,7 +147,7 @@ const sendRequest = (option: any, model: any) => {
     prompt += valueToCursor.replace(new RegExp('qq$'), '');
     prompt += option.presetSuffix || '';
   }
-  else {
+  else if (!option?.fullPage) {
     prompt += getTextByBlockUid(parentBlockUid);
     prompt += '\n';
 
@@ -132,7 +167,33 @@ const sendRequest = (option: any, model: any) => {
   // build the request payload
   let data;
   let url;
-  if (option?.outputType === 'image') {
+  if (option?.outputType === 'chat') {
+    url = 'https://api.openai.com/v1/chat/completions';
+
+    const pageTitle = getPageTitleByBlockUid(targetBlockUid); 
+    const currPageUid = getPageUidByPageTitle(pageTitle);
+    const tree = getFullTreeByParentUid(currPageUid);
+ 
+    let messages:any = [];
+    tree.children.map(block => {
+      const childrenText = parseRoamTree(block.children, 0);
+
+      if (block.text.startsWith('[assistant]:')) {
+        messages.push({ role: 'assistant', content: block.text.replace('[assistant]:', '') })
+        messages.push({ role: 'assistant', content: childrenText })
+      }
+      else {
+        messages.push({ role: 'user', content: block.text.replace(new RegExp('qq$'), '') })
+        messages.push({ role: 'user', content: childrenText })
+      }
+    })
+
+    data = {
+      model: 'gpt-3.5-turbo',
+      messages: messages
+    }
+  }
+  else if (option?.outputType === 'image') {
     url = 'https://api.openai.com/v1/images/generations'
     data = {
       prompt: prompt,
@@ -167,6 +228,24 @@ const sendRequest = (option: any, model: any) => {
   .then(data => {
     if (data.error) return;
 
+    // insert chat response
+    if (option?.outputType === 'chat') {
+      const text = data.choices[0].message.content.trim();
+      const lines = text.split("\n");
+
+      const pageTitle = getPageTitleByBlockUid(targetBlockUid); 
+      const currPageUid = getPageUidByPageTitle(pageTitle);
+
+      createBlock({
+        node: { text: `[assistant]: ${text}` },
+        parentUid: currPageUid,
+        order: getOrderByBlockUid(targetBlockUid) + 1
+      })
+
+      return;
+    }
+
+    // insert image
     if (option?.outputType === 'image') {
       const output = `![](${data.data?.[0]?.url})`
       createBlock({
@@ -176,13 +255,13 @@ const sendRequest = (option: any, model: any) => {
       return;
     }
 
+    // insert text completion
     const text = data?.text ? data.text : data.choices[0].text.trim();  // depending on the endpoint
     const lines = text.split("\n");
     lines.reverse().map((line: any) => {
       line = line.trim().replace(/^- /, '');
 
       if (line.length === 0) return; // skip blank line
-
 
       if (option.operation === 'updateParent') {
         updateBlock({
@@ -193,8 +272,6 @@ const sendRequest = (option: any, model: any) => {
       // bullet point
       else if (line.startsWith('- ')) {
         // insert into the last child
-        console.log('try getting target block', getShallowTreeByParentUid(targetBlockUid))
-
         createBlock({
           node: { text: line },
           parentUid: targetBlockUid

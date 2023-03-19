@@ -33,7 +33,8 @@ const OPTIONS = [
   {
     id: 'chat',
     name: '💬 Chat',
-    outputType: 'chat'
+    outputType: 'chat',
+    endpoint: 'chat'
   },
   {
     id: 'open_chatroam',
@@ -82,29 +83,45 @@ const OPTIONS = [
   },
 ]  
 
-const MODELS = [
-  {
-    name: 'text-davinci-003',
-    displayName: 'text-davinci-003'
-  },
-  {
-    name: 'text-curie-001',
-    displayName: 'text-curie-001'
-  },
-  {
-    name: 'text-babbage-001',
-    displayName: 'text-babbage-001'
-  },
-  {
-    name: 'text-ada-001',
-    displayName: 'text-ada-001'
-  },
+const MODELS: any = {
+  text: [
+    {
+      name: 'text-davinci-003',
+      displayName: 'text-davinci-003'
+    },
+    {
+      name: 'text-curie-001',
+      displayName: 'text-curie-001'
+    },
+    {
+      name: 'text-babbage-001',
+      displayName: 'text-babbage-001'
+    },
+    {
+      name: 'text-ada-001',
+      displayName: 'text-ada-001'
+    }
+  ],
+  chat: [
+    {
+      name: 'gpt-3.5-turbo',
+      displayName: 'gpt-3.5-turbo'
+    },
+    {
+      name: 'gpt-4',
+      displayName: 'gpt-4'
+    },
+    {
+      name: 'gpt-4-32k',
+      displayName: 'gpt-4-32k'
+    }
+  ]
   // Codex is still in private beta:
   // {
   //   name: 'code-davinci-002',
   //   displayName: 'code-davinci-002'
   // }
-]
+}
 
 const RoamAIMenu = ({
   onClose,
@@ -131,8 +148,10 @@ const RoamAIMenu = ({
     [menuRef, blockUid, onClose, triggerStart, textarea, modelIndex]
   );
 
-  const getAllModels = () => {
-    return MODELS.concat(customModels || []);
+  // return models for the current GPT endpoint
+  const getModels = () => {
+    const endpoint = OPTIONS[activeIndex]?.endpoint || 'text';
+    return MODELS[endpoint].concat(customModels || []);
   }
 
   const keydownListener = useCallback(
@@ -140,7 +159,8 @@ const RoamAIMenu = ({
     (e: KeyboardEvent) => {
       // switch mode
       if (e.ctrlKey || e.metaKey) {
-        const modelCount = getAllModels().length;
+        // select model
+        const modelCount = getModels().length;
 
         if (e.key === "ArrowUp") {
           // setModelIndex(1)//(modelIndex - 1)
@@ -161,6 +181,8 @@ const RoamAIMenu = ({
         return;
       }
       else {
+        setModelIndex(0);
+
         if (e.key === "ArrowDown") {
           const index = Number(menuRef.current.getAttribute("data-active-index"));
           const count = menuRef.current.childElementCount;
@@ -212,13 +234,7 @@ const RoamAIMenu = ({
   }, [keydownListener]);
   
   const getCurrentModel = () => {
-    if (OPTIONS[activeIndex]?.id === 'chat') {
-      return {
-        name: 'gpt-3.5-turbo',
-        displayName: 'gpt-3.5-turbo'
-      }
-    }
-    return getAllModels()[modelIndex];
+    return getModels()[modelIndex];
   }
 
   return (

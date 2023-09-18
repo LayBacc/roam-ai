@@ -35,22 +35,49 @@ const hashids = new Hashids();
 const normalizePageTitle = (title: string): string =>
   title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
-const parseModulesFromString = (rawString: string) => {
-  const output = [] as any;
+async function extractString(blockText) {
+  const match = blockText.match(/\(([^()]+)\)/);
+  if (match) {
+    const blockText = match[1];
+    if (window.roamjs.extension.queryBuilder && window.roamjs.extension.queryBuilder.runQuery) {
+      try {
+        const results = await window.roamjs.extension.queryBuilder.runQuery(blockText);
+        if (results && results.length > 0) {
+          const res = JSON.stringify(results, null, 2);
+          return res;
+        }
+        return null;
+      } catch (err) {
+        console.error("Error fetching query results:", err);
+        return null;
+      }
+    } else {
+      console.warn("QueryBuilder API is not available on window.roamjs.extension.queryBuilder");
+    }
+  }
+  return Promise.resolve(null);
+}
+
+const parseModulesFromString = async (rawString) => {
+  const output = [];
 
   const matches = rawString.match(/\[\[(.*?)\]\]|\(\((.*?)\)\)/g);
 
-  matches.forEach(match => {
-    const isPageReference = match.startsWith("[[")
+  for (const match of matches) {
+    const isPageReference = match.startsWith("[[");
     const title = isPageReference ? match.slice(2, match.length - 2) : null;
     const id = isPageReference ? null : match.slice(2, match.length - 2);
+    const isQueryBlock = await extractString(rawString);
 
+    console.log("isQueryBlock", isQueryBlock);
     output.push({
       title,
       id,
-      type: isPageReference ? "page" : "block"
+      type: isPageReference ? "page" : (isQueryBlock ? "qry-block" : "block"),
+      qryRes: isQueryBlock 
     });
-  });
+  }
+
   return output;
 }
 
@@ -70,7 +97,7 @@ const parseRoamTree = (data: any, level: number = 0): string => {
   return result;
 }
 
-const loadContext = ({ parentBlockUid, targetBlockUid, siblings }: any) => {
+const  loadContext = async ({ parentBlockUid, targetBlockUid, siblings }: any) => {
   let contextRaw = '';
   // add sibling blocks BEFORE the current block
   siblings.find((b: any) => {
@@ -78,7 +105,7 @@ const loadContext = ({ parentBlockUid, targetBlockUid, siblings }: any) => {
     return b.uid === lastEditedBlockUid;
   })
 
-  const contextModules = parseModulesFromString(contextRaw)
+  const contextModules = await parseModulesFromString(contextRaw)
   
   let fullContext = '';
   contextModules.map((contextModule: any) => {
@@ -92,17 +119,21 @@ const loadContext = ({ parentBlockUid, targetBlockUid, siblings }: any) => {
       title = getTextByBlockUid(blockUid)
     }
 
+    if (contextModule.type === 'qry-block') {
+      fullContext += contextModule.qryRes;
+    }
+
     const tree = getFullTreeByParentUid(blockUid);
-    
     fullContext += `### ${title}`;
-    fullContext += parseRoamTree(tree.children, 0);
+    if (contextModule.type !== 'qry-block') {
+       fullContext += parseRoamTree(tree.children, 0);
+    }
     fullContext += '\n\n\n';
   })
-
   return fullContext;
 }
 
-const sendRequest = (option: any, model: any) => {
+const sendRequest = async (option: any, model: any) => {
   const targetBlockUid = lastEditedBlockUid;
   const parentBlockUid = getParentUidByBlockUid(lastEditedBlockUid);
   const siblings = getBasicTreeByParentUid(parentBlockUid);
@@ -122,7 +153,7 @@ const sendRequest = (option: any, model: any) => {
 
   let prompt : any;
   if (option?.id === 'load_context') {
-    prompt = loadContext({ parentBlockUid, targetBlockUid, siblings });
+    prompt = await loadContext({ parentBlockUid, targetBlockUid, siblings });
   }
   else if (option?.id === 'continue_default') {
     prompt = 'current page context: \n```\n';
@@ -427,7 +458,7 @@ export default runExtension({
     let trigger = 'qq';
     let triggerRegex = new RegExp(`${trigger}(.*)$`);;
 
-    const documentInputListener = (e: InputEvent) => {
+    const documentInputListener = async (e: InputEvent) => {
       const target = e.target as HTMLElement;
       if (
         !menuLoaded &&

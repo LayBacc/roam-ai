@@ -22,90 +22,48 @@ type Props = {
 
 const OPTIONS = [
   {
-    id: 'completion_max',
-    name: '▶️ Complete'
-  },
-  {
-    id: 'continue_default',
-    name: '▶️ Complete (full page context)',
-    fullPage: true
-  },
-  {
     id: 'chat',
-    name: '💬 Chat',
+    name: '▶️ Run',
     outputType: 'chat',
     endpoint: 'chat'
   },
   {
-    id: 'open_chatroam',
-    name: '💬 Open AI ChatRoam'
+    id: 'run-with-context',
+    name: '🧱 Run (load context)',
+    outputType: 'chat',
+    endpoint: 'chat',
+    loadPages: true
   },
   {
-    id: 'completion_no_history',
-    name: '▶️ Complete (no context)',
-    // maxTokens: 120,
-    local: true
+    id: 'open-chatroam',
+    name: '➕ New ChatRoam',
+    outputType: 'none',
+    endpoint: 'none'
   },
   {
     id: 'generate-image',
     name: '🌅 Generate image',
-    local: true,
-    outputType: 'image'
-  },
-  {
-    id: 'rephrase',
-    name: '🔄 Rephrase',
-    maxTokens: 120,
-    preset: '```\n',
-    presetSuffix: '```\nGenerate a variation of the text above. Ideally make it shorter and more engaging.',
-    local: true
-  },
-  // {
-  //   id: 'label_from_examples',
-  //   name: 'Label parent',
-  //   maxTokens: 3,
-  //   operation: 'updateParent',
-  //   preset: `examples:\n- apple\n- orange\n- pear\n- watermelon\n- tomato\nlabel: fruits\n\nexamples:\n- acrylic paint\n- wood\n- canvas\n- oil paint\n- bronze\nlabel: art media\n\nexamples:\n- blue\n- red\n- yellow\n- green\n- white\nlabel: colors\n\nexamples:\n- French\n- Spanish\n- Italian\n- English\nlabel: languages\n\nexamples:\n`,
-  //   presetSuffix: 'label: '
-  // },
-  {
-    id: 'devils_advocate',
-    name: '😈 Devil\'s advocate',
-    maxTokens: 80,
-    preset: ``,
-    presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
-  },
-  {
-    id: 'load_context',
-    name: '🧱 Load context',
-    // preset: ``,
-    // presetSuffix: '^playing the devil\'s advocate, come up with the best arguments against the statement above: '
-  },
+    scope: 'local',
+    outputType: 'image',
+    endpoint: 'image'
+  }
 ]  
 
 const MODELS: any = {
-  text: [
-    {
-      name: 'text-davinci-003',
-      displayName: 'text-davinci-003'
-    },
-    {
-      name: 'text-curie-001',
-      displayName: 'text-curie-001'
-    },
-    {
-      name: 'text-babbage-001',
-      displayName: 'text-babbage-001'
-    },
-    {
-      name: 'text-ada-001',
-      displayName: 'text-ada-001'
-    }
-  ],
+  none: [{name: '-', displayName: '-' }],
+  image: [{name: 'dall-e-3', displayName: 'dall-e-3' }, {name: 'dall-e-2', displayName: 'dall-e-2' }],
   chat: [
+    {
+      name: 'gpt-3.5-turbo-0125',
+      displayName: 'gpt-3.5-turbo-0125'
+    },
     {
       name: 'gpt-3.5-turbo',
       displayName: 'gpt-3.5-turbo'
+    },
+    {
+      name: 'gpt-4-0125-preview',
+      displayName: 'gpt-4-0125-preview'
     },
     {
       name: 'gpt-4',
@@ -116,11 +74,6 @@ const MODELS: any = {
       displayName: 'gpt-4-32k'
     }
   ]
-  // Codex is still in private beta:
-  // {
-  //   name: 'code-davinci-002',
-  //   displayName: 'code-davinci-002'
-  // }
 }
 
 const RoamAIMenu = ({
@@ -140,19 +93,23 @@ const RoamAIMenu = ({
   const [modelIndex, setModelIndex] = useState(0);
   const [filter, setFilter] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const onSelect = useCallback(
-    (option) => {
-      onClose()
-      sendRequest(option, getCurrentModel())
-    },
-    [menuRef, blockUid, onClose, triggerStart, textarea, modelIndex]
-  );
 
-  // return models for the current GPT endpoint
   const getModels = () => {
-    const endpoint = OPTIONS[activeIndex]?.endpoint || 'text';
+    const endpoint = OPTIONS[activeIndex]?.endpoint || 'none';
     return MODELS[endpoint].concat(customModels || []);
   }
+
+  const getCurrentModel = useCallback(() => {
+    return getModels()[modelIndex];
+  }, [modelIndex, getModels]); // Ensure getModels is stable via useCallback as well
+
+  const onSelect = useCallback(
+    (option) => {
+      onClose();
+      sendRequest(option, getCurrentModel());
+    },
+    [activeIndex, onClose, sendRequest, getCurrentModel]
+  );
 
   const keydownListener = useCallback(
 
@@ -233,15 +190,13 @@ const RoamAIMenu = ({
     }; 
   }, [keydownListener]);
   
-  const getCurrentModel = () => {
-    return getModels()[modelIndex];
-  }
+  
 
   return (
     <div 
       className="bg-white drop-shadow-lg"
     >
-      <div className="px-3 py-3 text-md text-neutral-500 bg-gray-100 border border-l-0 border-t-0 border-r-0 border-b-1 border-gray-300 mb-2 flex items-center gap-x-4">
+      <div className="p-3 text-md text-neutral-500 bg-gray-100 border border-l-0 border-t-0 border-r-0 border-b-1 border-gray-300 mb-2 flex items-center gap-x-4">
         <div className="font-semibold text-gray-500">
           { getCurrentModel()?.displayName }
         </div>
@@ -259,7 +214,7 @@ const RoamAIMenu = ({
           OPTIONS.map((option, index) => {
             return(
               <div 
-                className={`text-lg bg-white text-neutral-900 hover:bg-blue-50 hover:text-blue-900 font-medium w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-blue-50 text-blue-900'}`}
+                className={`text-lg rounded-md text-neutral-900 hover:bg-neutral-100 font-medium w-full cursor-pointer px-1.5 py-1.5 ${activeIndex === index && 'bg-gray-100 font-semibold'}`}
                 onClick={() => onSelect(option)}
               >
                 { option.name }

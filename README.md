@@ -9,35 +9,25 @@ The AI extension for Roam.
 
 ## Capabilities
 
-### 💬 Chat
+### ▶️ Run
 
 Have a conversation based on the context in the current page
 
-First start a chat room with the "Open AI Chat Roam" command.
-
-Inside that page, use "Chat" to continue the convo.
-
 AI rseponses are tagged with `[assistant]:`
 
-https://www.loom.com/share/767dd9853bb2466aa9490c444d361c67
+### 🧱 Run (load context)
 
-### 🧱 Load Context
+Load existing pages as context.
+
+https://www.loom.com/share/046f983192cb4cbb954ba3b8541f3645
 
 #### what gets included in the prompt:
 
-within the parent tree, the content of all [[]] and (()) above the current block will be loaded
-
-#### suggested use A: container parent block
-
-![](https://figmage.com/images/c8w8ptS_K8mmTH7Wvb1Ey.png)
-
-#### suggested use B: container page
-
-![](https://figmage.com/images/eOTqXKeZmbj-R-vLhs2Iz.png)
+The content of all [[]] and (()) above the current block on this page will be loaded
 
 ### 🌅 Generate Image
 
-Generate an image using DALL-E 2.
+Generate an image using DALL-E 3 or DALL-E 2.
 
 This reads only the current block.
 

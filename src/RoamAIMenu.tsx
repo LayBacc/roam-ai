@@ -36,7 +36,7 @@ const OPTIONS = [
   },
   {
     id: 'open-chatroam',
-    name: '➕ New ChatRoam',
+    name: '➕ New ChatRoam (blank page)',
     outputType: 'none',
     endpoint: 'none'
   },

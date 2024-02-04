@@ -35,18 +35,19 @@ const hashids = new Hashids();
 const normalizePageTitle = (title: string): string =>
   title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
-async function extractString(blockText) {
+async function extractString(blockText: string) {
   const match = blockText.match(/\(([^()]+)\)/);
   if (match) {
     const blockText = match[1];
+
     if (
       window.roamjs.extension.queryBuilder &&
-      window.roamjs.extension.queryBuilder.runQuery
+      (window.roamjs.extension.queryBuilder as any)?.runQuery
     ) {
       try {
-        const results = await window.roamjs.extension.queryBuilder.runQuery(
-          blockText,
-        );
+        const results = await (
+          window.roamjs.extension.queryBuilder as any
+        )?.runQuery(blockText);
         if (results && results.length > 0) {
           const res = JSON.stringify(results, null, 2);
           return res;
@@ -135,7 +136,7 @@ const loadContext = async (tree: any): Promise<any[]> => {
     }
 
     const tree = getFullTreeByParentUid(blockUid);
-    blockContext += `### ${title}\n\n`;
+    blockContext += `[[${title}]]:\n---\n`;
     if (block.type !== 'qry-block') {
       blockContext += parseRoamTree(tree.children, 0);
     }
